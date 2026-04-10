@@ -643,7 +643,9 @@
         modelComplexity: 1,
         minDetectionConfidence: 0.6,
         minTrackingConfidence: 0.6,
-        selfieMode: true,
+        // Keep MediaPipe outputs un-mirrored; we manage mirroring ourselves
+        // so that video preview and gesture coordinates always stay consistent.
+        selfieMode: false,
       });
       hands.onResults(onResults);
 
