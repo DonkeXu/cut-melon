@@ -635,6 +635,19 @@
     }
 
     try {
+      // Restarting the run may sometimes leave the camera loop stale on some browsers.
+      // Make restart idempotent by stopping old loops and rebuilding the Hands graph.
+      try {
+        if (camera && typeof camera.stop === "function") camera.stop();
+      } catch {
+        // ignore
+      }
+      try {
+        if (hands && typeof hands.close === "function") hands.close();
+      } catch {
+        // ignore
+      }
+
       hands = new Hands({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
       });
@@ -675,7 +688,7 @@
     pauseBtn.addEventListener("click", () => setPaused(!paused));
   }
   if (resumeBtn) resumeBtn.addEventListener("click", () => setPaused(false));
-  if (restartBtn) restartBtn.addEventListener("click", () => restartRun());
+  if (restartBtn) restartBtn.addEventListener("click", () => start().catch((e) => setError(String(e))));
 
   window.addEventListener("keydown", (e) => {
     if ((e.target && /** @type {any} */ (e.target).tagName) === "INPUT") return;
