@@ -22,6 +22,7 @@
   const smoothVal = document.getElementById("smoothVal");
   const debug = /** @type {HTMLInputElement} */ (document.getElementById("debug"));
   const pauseBtn = /** @type {HTMLButtonElement} */ (document.getElementById("pauseBtn"));
+  const mirror = /** @type {HTMLInputElement} */ (document.getElementById("mirror"));
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -106,6 +107,7 @@
   let sensitivity = Number(sens.value); // px/s
   let smoothing = Number(smooth.value); // 0..0.95
   let showDebug = Boolean(debug.checked);
+  let mirrorMode = mirror ? Boolean(mirror.checked) : true;
   sensVal.textContent = String(sensitivity);
   smoothVal.textContent = smoothing.toFixed(2);
 
@@ -120,6 +122,15 @@
   debug.addEventListener("change", () => {
     showDebug = Boolean(debug.checked);
   });
+  if (mirror) {
+    mirror.addEventListener("change", () => {
+      mirrorMode = Boolean(mirror.checked);
+      video.style.transform = mirrorMode ? "scaleX(-1)" : "scaleX(1)";
+    });
+  }
+
+  // Ensure initial video preview matches mirror mode.
+  video.style.transform = mirrorMode ? "scaleX(-1)" : "scaleX(1)";
 
   // Game state
   const GAME_SECONDS = 60;
@@ -492,7 +503,8 @@
     ctx.save();
     ctx.fillStyle = "rgba(0,255,200,0.9)";
     for (const lm of lms) {
-      const x = (1 - lm.x) * width;
+      const xNorm = mirrorMode ? 1 - lm.x : lm.x;
+      const x = xNorm * width;
       const y = lm.y * height;
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, Math.PI * 2);
@@ -590,7 +602,8 @@
     }
 
     const lm = lms[8]; // index finger tip
-    const x = (1 - lm.x) * width;
+    const xNorm = mirrorMode ? 1 - lm.x : lm.x;
+    const x = xNorm * width;
     const y = lm.y * height;
 
     const t = nowMs();

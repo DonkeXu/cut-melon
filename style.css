@@ -137,6 +137,10 @@ body {
   margin-top: 10px;
 }
 
+.panel .row input[type="checkbox"] {
+  justify-self: start;
+}
+
 .panel input[type="range"] {
   width: 100%;
 }
