@@ -260,7 +260,8 @@
     const x = rand(width * 0.1, width * 0.9);
     const y = height + r + 10;
     const vx = rand(-180, 180);
-    const vy = rand(-980, -650);
+    // Throw higher so average trajectory crosses screen midline.
+    const vy = rand(-1280, -880);
     const id = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
     fruits.push({
       id,
