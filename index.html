@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Cut Melom — Hand Slice POC</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <video id="video" playsinline muted></video>
+      <canvas id="canvas"></canvas>
+
+      <div id="hud">
+        <div class="hud-left">
+          <div class="pill"><span class="k">Score</span> <span id="score">0</span></div>
+          <div class="pill"><span class="k">Lives</span> <span id="lives">3</span></div>
+          <div class="pill"><span class="k">Time</span> <span id="time">60</span>s</div>
+          <button id="pauseBtn" class="pill pill-btn" type="button">Pause</button>
+        </div>
+
+        <div class="hud-right">
+          <details class="panel" open>
+            <summary>Settings</summary>
+            <div class="row">
+              <label> Sensitivity </label>
+              <input id="sens" type="range" min="80" max="2200" step="10" value="420" />
+              <span class="val" id="sensVal">420</span>
+            </div>
+            <div class="row">
+              <label> Smoothing </label>
+              <input id="smooth" type="range" min="0" max="0.95" step="0.01" value="0.58" />
+              <span class="val" id="smoothVal">0.58</span>
+            </div>
+            <div class="row">
+              <label> Show Debug </label>
+              <input id="debug" type="checkbox" />
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div id="overlay" class="overlay">
+        <div class="card">
+          <div class="title">Cut Melom</div>
+          <div class="subtitle">用食指划过水果来切开它</div>
+          <button id="startBtn" class="primary">Start</button>
+          <div class="tip">需要摄像头权限（仅 https / localhost）。</div>
+          <div class="err" id="err"></div>
+        </div>
+      </div>
+
+      <div id="pauseOverlay" class="overlay" style="display: none">
+        <div class="card">
+          <div class="title">Paused</div>
+          <div class="subtitle">已暂停（P 键或按钮继续）</div>
+          <button id="resumeBtn" class="primary">Continue</button>
+          <button id="restartBtn" class="ghost">Restart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MediaPipe Hands (UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
