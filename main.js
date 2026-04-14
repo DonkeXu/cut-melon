@@ -334,7 +334,7 @@
 
     // Only spawn sub-pieces if we haven't hit the generation limit
     // and the resulting pieces would be large enough.
-    const canSplit = nextGen <= MAX_GENERATION && pr >= MIN_PIECE_RADIUS;
+    const canSplit = nextGen <= MAX_GENERATION && f.r * 0.62 >= MIN_PIECE_RADIUS;
 
     if (canSplit) {
       const pieceA = {
@@ -572,7 +572,11 @@
       const dtTip = Math.max(1e-3, (tip.t - tipPrev.t) / 1000);
       const spd = dist(tip.x, tip.y, tipPrev.x, tipPrev.y) / dtTip;
       if (spd >= sensitivity) {
-        for (const f of fruits) {
+        // Snapshot length so newly-pushed pieces from sliceFruit are not
+        // visited in the same frame (prevents instant chain-slicing).
+        const len = fruits.length;
+        for (let i = 0; i < len; i++) {
+          const f = fruits[i];
           if (f.sliced) continue;
           const d = segmentPointDistance(tipPrev.x, tipPrev.y, tip.x, tip.y, f.x, f.y);
           // "Blade thickness" grows with speed to feel less strict.
