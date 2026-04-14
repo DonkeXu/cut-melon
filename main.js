@@ -145,7 +145,7 @@
   let paused = false;
   let pausedAt = 0;
 
-  /** @type {{id:string,type:'fruit'|'bomb'|'piece',x:number,y:number,vx:number,vy:number,r:number,color:string,spin:number,rot:number, sliced?:boolean, parentId?:string}[]} */
+  /** @type {{id:string,type:'fruit'|'bomb'|'piece',x:number,y:number,vx:number,vy:number,r:number,color:string,spin:number,rot:number, sliced?:boolean, parentId?:string, generation?:number}[]} */
   let fruits = [];
   /** @type {{x:number,y:number,vx:number,vy:number,life:number,size:number,color:string}[]} */
   let particles = [];
@@ -275,6 +275,7 @@
       spin: rand(-3.8, 3.8),
       rot: rand(0, Math.PI * 2),
       sliced: false,
+      generation: 0,
     });
   }
 
@@ -314,45 +315,60 @@
       return;
     }
 
-    beep(780, 90, 0.05);
+    const gen = f.generation || 0;
+    // Higher-pitched beep for secondary slices.
+    beep(780 + gen * 220, 90, 0.05);
     score += 1;
-    addParticles(f.x, f.y, f.color, 26, 0.95);
+    // Fewer particles for smaller pieces.
+    const pCount = Math.max(8, Math.round(26 * Math.pow(0.6, gen)));
+    addParticles(f.x, f.y, f.color, pCount, 0.95);
 
-    const pr = Math.max(10, f.r * 0.62);
+    const nextGen = gen + 1;
+    const MAX_GENERATION = 2;
+    const MIN_PIECE_RADIUS = 12;
+    const pr = Math.max(MIN_PIECE_RADIUS, f.r * 0.62);
     const push = 180;
     const vbase = 0.4;
     const px = -ny;
     const py = nx;
 
-    const pieceA = {
-      id: `${f.id}_a`,
-      parentId: f.id,
-      type: "piece",
-      x: f.x + px * 6,
-      y: f.y + py * 6,
-      vx: f.vx * vbase + px * push,
-      vy: f.vy * vbase + py * push,
-      r: pr,
-      color: f.color,
-      spin: f.spin * 1.3,
-      rot: f.rot,
-      sliced: true,
-    };
-    const pieceB = {
-      id: `${f.id}_b`,
-      parentId: f.id,
-      type: "piece",
-      x: f.x - px * 6,
-      y: f.y - py * 6,
-      vx: f.vx * vbase - px * push,
-      vy: f.vy * vbase - py * push,
-      r: pr,
-      color: f.color,
-      spin: -f.spin * 1.3,
-      rot: f.rot,
-      sliced: true,
-    };
-    fruits.push(pieceA, pieceB);
+    // Only spawn sub-pieces if we haven't hit the generation limit
+    // and the resulting pieces would be large enough.
+    const canSplit = nextGen <= MAX_GENERATION && pr >= MIN_PIECE_RADIUS;
+
+    if (canSplit) {
+      const pieceA = {
+        id: `${f.id}_a`,
+        parentId: f.id,
+        type: "piece",
+        x: f.x + px * 6,
+        y: f.y + py * 6,
+        vx: f.vx * vbase + px * push,
+        vy: f.vy * vbase + py * push,
+        r: pr,
+        color: f.color,
+        spin: f.spin * 1.3,
+        rot: f.rot,
+        sliced: false,
+        generation: nextGen,
+      };
+      const pieceB = {
+        id: `${f.id}_b`,
+        parentId: f.id,
+        type: "piece",
+        x: f.x - px * 6,
+        y: f.y - py * 6,
+        vx: f.vx * vbase - px * push,
+        vy: f.vy * vbase - py * push,
+        r: pr,
+        color: f.color,
+        spin: -f.spin * 1.3,
+        rot: f.rot,
+        sliced: false,
+        generation: nextGen,
+      };
+      fruits.push(pieceA, pieceB);
+    }
   }
 
   function updateFruits(dt) {
@@ -379,7 +395,8 @@
       if (f.x < -240 || f.x > width + 240) return false;
       if (f.type === "fruit" && f.sliced) return false;
       if (f.type === "bomb" && f.sliced) return false;
-      if (f.type === "piece" && f.y > height + f.r + 30) return false;
+      if (f.type === "piece" && f.sliced && f.y > height + f.r + 30) return false;
+      if (f.type === "piece" && !f.sliced && f.y > height + f.r + 60) return false;
       return true;
     });
   }
